@@ -11,6 +11,8 @@ public class RelatorioForm : Form
 {
     private readonly DataGridView tabelaVendas;
     private readonly Label lblSituacao;
+    private readonly Label lblJogosVendidos;
+    private readonly Label lblTotal;
 
     private readonly CultureInfo culturaBrasil =
         new CultureInfo("pt-BR");
@@ -92,8 +94,17 @@ public class RelatorioForm : Form
         lblSituacao.Location = new Point(50, 435);
         lblSituacao.Size = new Size(500, 30);
 
-        Label lblTotal = new Label();
-        lblTotal.Text = "Faturamento: em implementação";
+        lblJogosVendidos = new Label();
+        lblJogosVendidos.Text = "Jogos vendidos: 0";
+        lblJogosVendidos.Font = new Font(
+            "Segoe UI", 12, FontStyle.Bold
+        );
+        lblJogosVendidos.ForeColor = Color.White;
+        lblJogosVendidos.Location = new Point(50, 465);
+        lblJogosVendidos.Size = new Size(320, 30);
+
+        lblTotal = new Label();
+        lblTotal.Text = "Faturamento: R$ 0,00";
         lblTotal.Font = new Font(
             "Segoe UI", 15, FontStyle.Bold
         );
@@ -121,6 +132,7 @@ public class RelatorioForm : Form
         Controls.Add(lblDescricao);
         Controls.Add(tabelaVendas);
         Controls.Add(lblSituacao);
+        Controls.Add(lblJogosVendidos);
         Controls.Add(lblTotal);
         Controls.Add(btnVoltar);
 
@@ -153,22 +165,34 @@ public class RelatorioForm : Form
                     venda.Total.ToString("C", culturaBrasil)
                 );
             }
-           
-            if (vendas.Count == 0)
-            {
-                lblSituacao.Text =
-                    "Nenhuma venda registrada.";
-            }
-            else
-            {
-                lblSituacao.Text =
-                    $"{vendas.Count} pedido(s) registrado(s).";
-            }
+
+            int totalPedidos = vendas.Count;
+
+            int totalJogos = vendas.Sum(venda =>
+                venda.Itens.Sum(item => item.Quantidade)
+            );
+
+            decimal faturamento = vendas.Sum(
+                venda => venda.Total
+            );
+
+            lblSituacao.Text =
+                $"Pedidos realizados: {totalPedidos}";
+
+            lblJogosVendidos.Text =
+                $"Jogos vendidos: {totalJogos}";
+
+            lblTotal.Text =
+                $"Faturamento: {faturamento.ToString("C", culturaBrasil)}";
+
         }
         catch (Exception ex)
         {
             lblSituacao.Text =
                 "Erro ao carregar as vendas.";
+
+            lblJogosVendidos.Text = "Jogos vendidos: --";
+            lblTotal.Text = "Faturamento: --";
 
             MessageBox.Show(
                 "Não foi possível carregar o relatório.\n" +
