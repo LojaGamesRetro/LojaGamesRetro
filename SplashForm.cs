@@ -69,10 +69,24 @@ public class SplashForm : Form
         {
             barraProgresso.Value += 2;
         }
-        else
+
+        if (barraProgresso.Value >= 100)
         {
             timerCarregamento.Stop();
             lblStatus.Text = "Carregamento concluído!";
+
+            AbrirMenu();
         }
     }
+
+
+    private void AbrirMenu()
+    {
+        MenuForm menu = new MenuForm();
+        menu.FormClosed += (sender, e) => Close();
+        menu.Show();
+        Hide();
+    }
+
+
 }
