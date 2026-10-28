@@ -1,0 +1,14 @@
+﻿
+CHECKPOINT 3 - C# DEVELOPMENT
+
+Curso: Engenharia de Software
+Turma: 3ESPS
+Professor: Wellington Cidade Silva
+
+Projeto: Loja Games Retro
+
+Nome: Musashi Mabuti
+RM: 559444
+
+Repositorio GitHub:
+https://github.com/LojaGamesRetro/LojaGamesRetro
