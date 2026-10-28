@@ -104,8 +104,8 @@ public class CatalogoForm : Form
         btnRemover.Font = new Font(
             "Segoe UI", 11, FontStyle.Bold
         );
-        btnRemover.Location = new Point(65, 380);
-        btnRemover.Size = new Size(220, 40);
+        btnRemover.Location = new Point(15, 382);
+        btnRemover.Size = new Size(150, 40);
         btnRemover.BackColor = Color.Firebrick;
         btnRemover.ForeColor = Color.White;
         btnRemover.FlatStyle = FlatStyle.Flat;
@@ -113,11 +113,29 @@ public class CatalogoForm : Form
         btnRemover.Cursor = Cursors.Hand;
         btnRemover.Click += RemoverItem;
 
+        Button btnFinalizar = new Button();
+
+        btnFinalizar.Text = "Finalizar Pedido";
+        btnFinalizar.Font = new Font(
+            "Segoe UI", 10, FontStyle.Bold
+        );
+        btnFinalizar.Size = new Size(155, 40);
+        btnFinalizar.Location = new Point(180, 382);
+        btnFinalizar.BackColor =
+            Color.FromArgb(0, 140, 160);
+        btnFinalizar.ForeColor = Color.White;
+        btnFinalizar.FlatStyle = FlatStyle.Flat;
+        btnFinalizar.FlatAppearance.BorderSize = 0;
+        btnFinalizar.Cursor = Cursors.Hand;
+
+        btnFinalizar.Click += FinalizarPedido;
+
         painelCarrinho.Controls.Add(lblCarrinho);
         painelCarrinho.Controls.Add(listaCarrinho);
         painelCarrinho.Controls.Add(lblQuantidade);
         painelCarrinho.Controls.Add(lblTotal);
         painelCarrinho.Controls.Add(btnRemover);
+        painelCarrinho.Controls.Add(btnFinalizar);
 
         CarregarJogos();
 
@@ -339,4 +357,76 @@ public class CatalogoForm : Form
         lblTotal.Text =
             $"Total: {valorTotal.ToString("C", culturaBrasil)}";
     }
+
+    private void FinalizarPedido(object? sender, EventArgs e)
+    {
+        if (carrinho.Count == 0)
+        {
+            MessageBox.Show(
+                "Adicione pelo menos um jogo ao carrinho.",
+                "Carrinho vazio",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            );
+            return;
+        }
+
+        decimal total = carrinho.Sum(i => i.Subtotal);
+
+        DialogResult resposta = MessageBox.Show(
+            $"Deseja finalizar o pedido de " +
+            $"{total.ToString("C", culturaBrasil)}?",
+            "Confirmar Pedido",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question
+        );
+
+        if (resposta != DialogResult.Yes)
+        {
+            return;
+        }
+
+        Venda venda = new Venda
+        {
+            Data = DateTime.Now,
+
+            Itens = carrinho.Select(item => new ItemVenda
+            {
+                Nome = item.Jogo.Nome,
+                Console = item.Jogo.Console,
+                PrecoUnitario = item.Jogo.Preco,
+                Quantidade = item.Quantidade
+            }).ToList(),
+
+            Total = total
+        };
+
+        try
+        {
+            VendaRepository.Salvar(venda);
+
+            carrinho.Clear();
+            AtualizarCarrinho();
+      
+            MessageBox.Show(
+                "Pedido finalizado com sucesso!\n\n" +
+                $"Pedido: {venda.Id.ToString("N")[..8]}\n" +
+                $"Total: {total.ToString("C", culturaBrasil)}",
+                "Compra realizada",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                "Não foi possível salvar o pedido.\n" +
+                ex.Message,
+                "Erro ao salvar",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
+    }
+
 }
