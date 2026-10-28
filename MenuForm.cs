@@ -57,7 +57,8 @@ public class MenuForm : Form
             290,
             Color.FromArgb(60, 110, 180)
         );
-        btnRelatorio.Enabled = false;
+        btnRelatorio.Enabled = true;
+        btnRelatorio.Click += AbrirRelatorio;
 
         Button btnSair = CriarBotao(
             "Sair",
@@ -103,6 +104,12 @@ public class MenuForm : Form
         using CatalogoForm catalogo = new CatalogoForm();
         catalogo.ShowDialog(this);
     }
+    private void AbrirRelatorio(object? sender, EventArgs e)
+    {
+        using RelatorioForm relatorio = new RelatorioForm();
+        relatorio.ShowDialog(this);
+    }
+
 
 }
 
