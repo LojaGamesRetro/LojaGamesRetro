@@ -1,12 +1,20 @@
 ﻿
 using System;
 using System.Drawing;
+using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace LojaGamesRetro;
 
 public class RelatorioForm : Form
 {
+    private readonly DataGridView tabelaVendas;
+    private readonly Label lblSituacao;
+
+    private readonly CultureInfo culturaBrasil =
+        new CultureInfo("pt-BR");
+
     public RelatorioForm()
     {
         Text = "Loja Games Retrô - Relatório";
@@ -34,36 +42,64 @@ public class RelatorioForm : Form
         lblDescricao.Location = new Point(150, 100);
         lblDescricao.Size = new Size(640, 35);
 
-        DataGridView tabelaVendas = new DataGridView();
+        tabelaVendas = new DataGridView();
         tabelaVendas.Location = new Point(50, 155);
         tabelaVendas.Size = new Size(840, 275);
         tabelaVendas.BackgroundColor =
             Color.FromArgb(30, 30, 50);
-        tabelaVendas.ForeColor = Color.Black;
-        tabelaVendas.ReadOnly = true;
 
+        tabelaVendas.ReadOnly = true;
         tabelaVendas.AllowUserToAddRows = false;
         tabelaVendas.AllowUserToDeleteRows = false;
         tabelaVendas.RowHeadersVisible = false;
+        tabelaVendas.MultiSelect = false;
+
         tabelaVendas.AutoSizeColumnsMode =
             DataGridViewAutoSizeColumnsMode.Fill;
 
         tabelaVendas.SelectionMode =
             DataGridViewSelectionMode.FullRowSelect;
 
+        tabelaVendas.EnableHeadersVisualStyles = false;
+
+        tabelaVendas.ColumnHeadersDefaultCellStyle.BackColor =
+            Color.FromArgb(45, 45, 75);
+
+        tabelaVendas.ColumnHeadersDefaultCellStyle.ForeColor =
+            Color.White;
+
+        tabelaVendas.DefaultCellStyle.BackColor =
+            Color.FromArgb(35, 35, 60);
+
+        tabelaVendas.DefaultCellStyle.ForeColor =
+            Color.White;
+
+        tabelaVendas.DefaultCellStyle.SelectionBackColor =
+            Color.DarkSlateBlue;
+
+        tabelaVendas.DefaultCellStyle.SelectionForeColor =
+            Color.White;
+
         tabelaVendas.Columns.Add("colPedido", "Pedido");
         tabelaVendas.Columns.Add("colData", "Data");
         tabelaVendas.Columns.Add("colJogos", "Jogos");
         tabelaVendas.Columns.Add("colTotal", "Total");
 
+        lblSituacao = new Label();
+        lblSituacao.Text = "Carregando vendas...";
+        lblSituacao.Font = new Font("Segoe UI", 11);
+        lblSituacao.ForeColor = Color.LightGray;
+        lblSituacao.Location = new Point(50, 435);
+        lblSituacao.Size = new Size(500, 30);
+
         Label lblTotal = new Label();
-        lblTotal.Text = "Faturamento Total: R$ 0,00";
+        lblTotal.Text = "Faturamento: em implementação";
         lblTotal.Font = new Font(
-            "Segoe UI", 16, FontStyle.Bold
+            "Segoe UI", 15, FontStyle.Bold
         );
         lblTotal.ForeColor = Color.Cyan;
         lblTotal.TextAlign = ContentAlignment.MiddleRight;
-        lblTotal.Location = new Point(400, 445);
+        lblTotal.Location = new Point(400, 460);
         lblTotal.Size = new Size(490, 40);
 
         Button btnVoltar = new Button();
@@ -84,7 +120,63 @@ public class RelatorioForm : Form
         Controls.Add(lblTitulo);
         Controls.Add(lblDescricao);
         Controls.Add(tabelaVendas);
+        Controls.Add(lblSituacao);
         Controls.Add(lblTotal);
         Controls.Add(btnVoltar);
+
+        CarregarVendas();
+    }
+
+    private void CarregarVendas()
+    {
+        try
+        {
+            tabelaVendas.Rows.Clear();
+
+            var vendas = VendaRepository.Listar();
+
+            foreach (Venda venda in vendas)
+            {
+                string jogosComprados = string.Join(
+                    ", ",
+                    venda.Itens.Select(item =>
+                        $"{item.Nome} x{item.Quantidade}"
+                    )
+                );
+
+                tabelaVendas.Rows.Add(
+                    venda.Id.ToString("N")[..8].ToUpperInvariant(),
+                    venda.Data.ToString(
+                        "dd/MM/yyyy HH:mm", culturaBrasil
+                    ),
+                    jogosComprados,
+                    venda.Total.ToString("C", culturaBrasil)
+                );
+            }
+           
+            if (vendas.Count == 0)
+            {
+                lblSituacao.Text =
+                    "Nenhuma venda registrada.";
+            }
+            else
+            {
+                lblSituacao.Text =
+                    $"{vendas.Count} pedido(s) registrado(s).";
+            }
+        }
+        catch (Exception ex)
+        {
+            lblSituacao.Text =
+                "Erro ao carregar as vendas.";
+
+            MessageBox.Show(
+                "Não foi possível carregar o relatório.\n" +
+                ex.Message,
+                "Erro",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            );
+        }
     }
 }
