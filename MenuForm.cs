@@ -49,7 +49,8 @@ public class MenuForm : Form
             220,
             Color.FromArgb(0, 150, 170)
         );
-        btnCatalogo.Enabled = false;
+        btnCatalogo.Enabled = true;
+        btnCatalogo.Click += AbrirCatalogo;
 
         btnRelatorio = CriarBotao(
             "Relatório de Vendas",
@@ -97,5 +98,11 @@ public class MenuForm : Form
 
         return botao;
     }
+    private void AbrirCatalogo(object? sender, EventArgs e)
+    {
+        using CatalogoForm catalogo = new CatalogoForm();
+        catalogo.ShowDialog(this);
+    }
+
 }
 
